@@ -21,7 +21,7 @@ public class Bot {
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer " + llmKey)
             .POST(HttpRequest.BodyPublishers.ofString(
-                "{\"model\": \"meta-llama/Llama-3.3-70B-Instruct-Turbo\",\"messages\": [" + message + "],\}"
+                "{\"model\": \"meta-llama/Llama-3.3-70B-Instruct-Turbo\",\"messages\": [" + message + "],}"
             ).build();
         try {
             HttpResponse<String> llmResponse = llmClient.send(
