@@ -23,3 +23,5 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_MSG: ${{ vars.SLACK_WEBHOOK_MSG }}
+          LLM_URL: ${{ secrets.LLM_URL }}
+          LLM_KEY: ${{ secrets.LLM_KEY }}
