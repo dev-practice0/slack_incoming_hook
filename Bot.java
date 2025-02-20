@@ -24,8 +24,7 @@ public class Bot {
         sb.append("\"messages\": [");
         sb.append("{\"role\": \"user\", \"content\": \"" + message + "\"}");
         sb.append("]").append(",");
-        sb.append("\"model\": \"" + modelName + "\"").append(",");
-        sb.append("\"response_format\": {\"type\": \"json_object\"}");
+        sb.append("\"model\": \"" + modelName + "\"")
         sb.append("}");
         // * 3. Java 11 HttpClient를 사용하여 LLM API에 POST 요청을 보냅니다.
         HttpClient llmClient = HttpClient.newHttpClient();
