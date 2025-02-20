@@ -5,9 +5,7 @@ import java.util.*;
 
 public class Bot {
     public static void main(String[] args) { // 진입부분
-        // 이게 있어야 이 클래스를 실행했을 때 작동을 함
-        // 웹훅을 만들 거임 -> URL 필요함
-        // 환경변수로 받아올 것임 -> yml 파일에서 전달하게
+        // 웹훅 URL과 메시지는 환경변수로 받음
         String webhookUrl = System.getenv("SLACK_WEBHOOK_URL");
         String message = System.getenv("SLACK_WEBHOOK_MSG");
 
@@ -21,14 +19,11 @@ public class Bot {
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer " + llmKey)
             .POST(HttpRequest.BodyPublishers.ofString(
-                "{\"model\": \"meta-llama/Llama-3.3-70B-Instruct-Turbo\",\"messages\": [" + message + "],}"
-            )).build();
-        HttpResponse<String> llmResponse = null; // null 자리는 잡아줌
+                "{\"model\": \"meta-llama/Llama-3.3-70B-Instruct-Turbo\",\"messages\": [" + message + "]}"
+            ))
+            .build();
+        HttpResponse<String> llmResponse = null;
         try {
-            // scope 문제
-            // HttpResponse<String> llmResponse = llmClient.send(
-            //     llmRequest, HttpResponse.BodyHandlers.ofString()
-            // );
             llmResponse = llmClient.send(
                 llmRequest, HttpResponse.BodyHandlers.ofString()
             );
@@ -38,15 +33,14 @@ public class Bot {
             e.printStackTrace();
         }        
 
-        // Java 11 -> fetch
+        // Slack 웹훅 호출 (Java 11 HttpClient 사용)
         HttpClient client = HttpClient.newHttpClient();
-        // 요청을 얹힐 거다
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(webhookUrl))
             .header("Content-Type", "application/json")
-            // .POST(HttpRequest.BodyPublishers.ofString("{\"text\":\"테스트 메시지\"}")) 
-            // .POST(HttpRequest.BodyPublishers.ofString("{\"text\":\" + " + message + "\"}")) 
-            .POST(HttpRequest.BodyPublishers.ofString("{\"text\":\" + " + llmResponse.body() + "\"}")) 
+            .POST(HttpRequest.BodyPublishers.ofString(
+                "{\"text\":\"" + llmResponse.body() + "\"}"
+            ))
             .build();
         
         try {
