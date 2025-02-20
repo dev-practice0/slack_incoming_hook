@@ -19,7 +19,6 @@ public class Bot {
         // * 2. LLM 요청 JSON 문자열을 직접 구성합니다.
         //    - 여기서는 messages 배열에 사용자 메시지를 객체로 포함시킵니다.
         String modelName = "mixtral-8x7b-32768";
-        String responseFormat = "\"type\": \"json_object\"};"
         StringButter sb = new StringButter();
         sb.append("{");
         sb.append("\"messages\": [");
