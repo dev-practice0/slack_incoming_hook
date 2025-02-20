@@ -23,8 +23,13 @@ public class Bot {
             .POST(HttpRequest.BodyPublishers.ofString(
                 "{\"model\": \"meta-llama/Llama-3.3-70B-Instruct-Turbo\",\"messages\": [" + message + "],}"
             )).build();
+        HttpResponse<String> llmResponse = null; // null 자리는 잡아줌
         try {
-            HttpResponse<String> llmResponse = llmClient.send(
+            // scope 문제
+            // HttpResponse<String> llmResponse = llmClient.send(
+            //     llmRequest, HttpResponse.BodyHandlers.ofString()
+            // );
+            llmResponse = llmClient.send(
                 llmRequest, HttpResponse.BodyHandlers.ofString()
             );
             System.out.println("요청 코드: " + llmResponse.statusCode());
