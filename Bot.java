@@ -33,6 +33,9 @@ public class Bot {
             int contentEnd = llmBody.indexOf("\"},\"logprobs\"");
             String content = llmBody.substring(contentStart, contentEnd).replace("\\\"", "\"");
             
+            // 앞뒤에 있는 불필요한 큰 따옴표만 제거 (문자열의 시작(^)과 끝($)에 있는 " 문자 제거)
+            content = content.replaceAll("^\"+|\"+$", "");
+            
             String slackJson = """
                 {"text":"%s"}
                 """.formatted(content.replace("\"", "\\\""));
