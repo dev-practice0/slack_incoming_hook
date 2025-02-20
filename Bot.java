@@ -32,8 +32,12 @@ public class Bot {
         }
 
         HttpClient client = HttpClient.newHttpClient();
-        // LLM 응답을 Slack으로 전송할 때도 JSON 문자열 포맷을 맞춤
-        String slackJson = "{\"text\":\"" + llmResponse.body() + "\"}";
+        // LLM 응답 문자열에서 따옴표와 개행문자 이스케이프 처리
+        String escapedLLMResponse = llmResponse.body()
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n");
+        String slackJson = "{\"text\":\"" + escapedLLMResponse + "\"}";
+        
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(webhookUrl))
             .header("Content-Type", "application/json")
