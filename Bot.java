@@ -1,10 +1,9 @@
 import java.net.*;
 import java.net.http.*;
-import java.time.*;
 import java.util.*;
 
 public class Bot {
-    public static void main(String[] args) { // 진입부분
+    public static void main(String[] args) {
         // 웹훅 URL과 메시지는 환경변수로 받음
         String webhookUrl = System.getenv("SLACK_WEBHOOK_URL");
         String message = System.getenv("SLACK_WEBHOOK_MSG");
@@ -14,14 +13,15 @@ public class Bot {
         String llmKey = System.getenv("LLM_KEY");
 
         HttpClient llmClient = HttpClient.newHttpClient();
+        // 메시지를 JSON 문자열의 요소로 사용하기 위해 따옴표로 감쌈
+        String llmJson = "{\"model\": \"meta-llama/Llama-3.3-70B-Instruct-Turbo\",\"messages\": [\"" + message + "\"]}";
         HttpRequest llmRequest = HttpRequest.newBuilder()
             .uri(URI.create(llmUrl))
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer " + llmKey)
-            .POST(HttpRequest.BodyPublishers.ofString(
-                "{\"model\": \"meta-llama/Llama-3.3-70B-Instruct-Turbo\",\"messages\": [" + message + "]}"
-            ))
+            .POST(HttpRequest.BodyPublishers.ofString(llmJson))
             .build();
+
         HttpResponse<String> llmResponse = null;
         try {
             llmResponse = llmClient.send(
@@ -35,12 +35,12 @@ public class Bot {
 
         // Slack 웹훅 호출 (Java 11 HttpClient 사용)
         HttpClient client = HttpClient.newHttpClient();
+        // LLM 응답 값을 Slack 메시지로 전송
+        String slackJson = "{\"text\":\"" + llmResponse.body() + "\"}";
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(webhookUrl))
             .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(
-                "{\"text\":\"" + llmResponse.body() + "\"}"
-            ))
+            .POST(HttpRequest.BodyPublishers.ofString(slackJson))
             .build();
         
         try {
