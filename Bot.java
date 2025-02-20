@@ -32,3 +32,5 @@ public class Bot {
         }
     }
 }
+
+SLACK_WEBHOOK_MSG: ${{ vars.SLACK_WEBHOOK_MSG }}
