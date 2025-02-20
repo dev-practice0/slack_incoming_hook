@@ -18,17 +18,23 @@ public class Bot {
         
         // * 2. LLM 요청 JSON 문자열을 직접 구성합니다.
         //    - 여기서는 messages 배열에 사용자 메시지를 객체로 포함시킵니다.
-        //    - JSON 형식에 맞게 문자열 이스케이프 처리를 위해 escapeJson() 함수를 사용합니다.
-        String llmRequestJson = "{\"model\": \"meta-llama/Llama-3.3-70B-Instruct-Turbo\", \"messages\": [{\"role\":\"user\", \"content\":\"" 
-                                  + escapeJson(message) + "\"}]}";
-        
+        String modelName = "mixtral-8x7b-32768";
+        String responseFormat = "\"type\": \"json_object\"};"
+        StringButter sb = new StringButter();
+        sb.append("{");
+        sb.append("\"messages\": [");
+        sb.append("{\"role\": \"user\", \"content\": \"" + message + "\"}");
+        sb.append("]").append(",");
+        sb.append("\"model\": \"" + modelName + "\"").append(",");
+        sb.append("\"response_format\": {\"type\": \"json_object\"}");
+        sb.append("}");
         // * 3. Java 11 HttpClient를 사용하여 LLM API에 POST 요청을 보냅니다.
         HttpClient llmClient = HttpClient.newHttpClient();
         HttpRequest llmRequest = HttpRequest.newBuilder()
             .uri(URI.create(llmUrl))
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer " + llmKey)
-            .POST(HttpRequest.BodyPublishers.ofString(llmRequestJson))
+            .POST(HttpRequest.BodyPublishers.ofString(sb.toString()))
             .build();
         
         HttpResponse<String> llmResponse = null;
@@ -43,11 +49,11 @@ public class Bot {
         
         // * 4. LLM 응답에서 choices[0].message.content 값을 단순 문자열 탐색으로 추출합니다.
         String llmBody = llmResponse.body();
-        String content = extractContentFromLLMResponse(llmBody);
+        System.out.println(llmBody);
         
         // * 5. Slack 웹훅으로 전송할 JSON 문자열을 구성합니다.
         //    - content 값을 JSON 형식에 맞게 이스케이프 처리합니다.
-        String slackJson = "{\"text\":\"" + escapeJson(content) + "\"}";
+        String slackJson = "{\"text\":\"" + llmBody + "\"}";
         
         // * 6. Slack 웹훅 URL로 POST 요청을 보내어 메시지를 전송합니다.
         HttpClient slackClient = HttpClient.newHttpClient();
@@ -64,36 +70,5 @@ public class Bot {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-    }
-    
-    // * 간단한 JSON 문자열 이스케이프 함수
-    //    - 백슬래시, 따옴표, 개행문자를 이스케이프합니다.
-    private static String escapeJson(String str) {
-        if (str == null) return "";
-        return str.replace("\\", "\\\\")
-                  .replace("\"", "\\\"")
-                  .replace("\n", "\\n");
-    }
-    
-    // * LLM 응답 JSON에서 choices[0].message.content 값을 추출하는 간단한 함수
-    //    - 이 방식은 매우 단순하며, 실제 JSON 파싱보다는 취급할 수 있는 경우에 한정됩니다.
-    private static String extractContentFromLLMResponse(String json) {
-        // * "content": 문자열을 기준으로 값을 추출합니다.
-        String target = "\"content\":";
-        int idx = json.indexOf(target);
-        if (idx == -1) {
-            return "";
-        }
-        // * 첫 번째 따옴표 위치 찾기 (값의 시작)
-        int startQuote = json.indexOf("\"", idx + target.length());
-        if (startQuote == -1) {
-            return "";
-        }
-        // * 두 번째 따옴표 위치 찾기 (값의 끝)
-        int endQuote = json.indexOf("\"", startQuote + 1);
-        if (endQuote == -1) {
-            return "";
-        }
-        return json.substring(startQuote + 1, endQuote);
     }
 }
